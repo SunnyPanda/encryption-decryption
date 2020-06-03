@@ -3,24 +3,37 @@ package encryptdecrypt;
 import java.util.Scanner;
 
 public class Main {
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        String original = scanner.nextLine();
+        String operation = scanner.nextLine();
+        String inputString = scanner.nextLine();
         int key = scanner.nextInt();
-
-        System.out.println(encrypt(original, key));
+        switch (operation) {
+            case "enc":
+                System.out.println(encrypt(inputString, key));
+                break;
+            case "dec":
+                System.out.println(decrypt(inputString, key));
+        }
     }
 
     static String encrypt(String original, int key) {
         StringBuilder encrypted = new StringBuilder();
         for (char letter : original.toCharArray()) {
-            if (Character.isAlphabetic(letter)) {
-                encrypted.append((char) (((letter - 'a' + key) % 26) + 'a'));
-            } else {
-                encrypted.append(letter);
-            }
+            encrypted.append((char)(letter + key));
         }
+
         return encrypted.toString();
+    }
+
+    static String decrypt(String encrypted, int key) {
+        StringBuilder original = new StringBuilder();
+        for (char letter : encrypted.toCharArray()) {
+            original.append((char)(letter - key));
+        }
+
+        return original.toString();
     }
 }
