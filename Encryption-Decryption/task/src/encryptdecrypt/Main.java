@@ -1,22 +1,63 @@
 package encryptdecrypt;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
+    private static final Map<String, String> arguments = new HashMap<>();
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        for (int i = 0; i < args.length - 1; i += 2) {
+            if (args[i + 1].startsWith("-")) {
+                arguments.put(args[i], null);
+                i--;
+            } else {
+                arguments.put(args[i], args[i + 1]);
+            }
+        }
 
-        String operation = scanner.nextLine();
-        String inputString = scanner.nextLine();
-        int key = scanner.nextInt();
-        switch (operation) {
+        String mode = arguments.getOrDefault("-mode", "enc");
+        String key = arguments.getOrDefault("-key", "0");
+        String inputString = readInputString();
+        String outputFilePath = arguments.getOrDefault("-out", "");
+
+        if (mode == null || key == null || outputFilePath == null) {
+            System.out.println("Error occurred! Argument doesn't have a value!");
+        } else {
+            String result = processInput(mode, inputString, Integer.parseInt(key));
+            outputResult(result, outputFilePath);
+        }
+    }
+
+    static String readInputString() {
+        String inputString = "";
+        if (arguments.containsKey("-data")) {
+            inputString = arguments.get("-data");
+        } else if (arguments.containsKey("-in")) {
+            File inputFile = new File(arguments.get("-in"));
+            try (Scanner scanner = new Scanner(inputFile)) {
+                inputString = scanner.nextLine();
+            } catch (FileNotFoundException | NullPointerException e) {
+                System.out.println("Error occurred while reading input file!");
+            }
+        }
+        return inputString;
+    }
+
+    static String processInput(String mode, String inputString, int key) {
+        String result = "";
+        switch (mode) {
             case "enc":
-                System.out.println(encrypt(inputString, key));
+                result = encrypt(inputString, key);
                 break;
             case "dec":
-                System.out.println(decrypt(inputString, key));
+                result = decrypt(inputString, key);
         }
+        return result;
     }
 
     static String encrypt(String original, int key) {
@@ -35,5 +76,18 @@ public class Main {
         }
 
         return original.toString();
+    }
+
+    static void outputResult(String result, String outputFilePath) {
+        if (outputFilePath.isEmpty()) {
+            System.out.println(result);
+        } else {
+            File outputFile = new File(outputFilePath);
+            try (PrintWriter printWriter = new PrintWriter(outputFile)) {
+                printWriter.println(result);
+            } catch (FileNotFoundException e) {
+                System.out.println("Error occurred while trying to reach output file!");
+            }
+        }
     }
 }
